@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Interface Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group input[type="file"] {
+            padding: 3px;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .result-container {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            border: 1px solid #007bff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .result-container img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <form id="userForm">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="photo">Photo</label>
+            <input type="file" id="photo" name="photo" accept="image/*" required>
+        </div>
+        <div class="form-group">
+            <label for="rank">Rank</label>
+            <select id="rank" name="rank" required>
+                <option value="First Rank">First Rank</option>
+                <option value="Second Rank">Second Rank</option>
+                <option value="Third Rank">Third Rank</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="idNumber">ID Number</label>
+            <input type="text" id="idNumber" name="idNumber" >
+        </div>
+        <div class="form-group">
+            <button type="submit">Generate PDF</button>
+        </div>
+    </form>
+    <div class="result-container" id="resultContainer">
+        <div id="userPhotoContainer"></div>
+        <p>ID: <span id="userId"></span></p>
+        <p>User Name: <span id="userName"></span></p>
+        <p>Congratulations!! You have secured</p>
+        <p><span id="userRank"></span></p>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script>
+    document.getElementById('userForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const photo = document.getElementById('photo').files[0];
+        const rank = document.getElementById('rank').value;
+        const idNumber = document.getElementById('idNumber').value;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const imgData = event.target.result;
+
+            // Display result on screen
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userId').textContent = idNumber;
+            document.getElementById('userRank').textContent = rank;
+            document.getElementById('userRank').style.fontWeight = 'bold';
+            const img = document.createElement('img');
+            img.src = imgData;
+            document.getElementById('userPhotoContainer').innerHTML = '';
+            document.getElementById('userPhotoContainer').appendChild(img);
+            document.getElementById('resultContainer').style.display = 'block';
+
+            // Generate PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // User photo
+            doc.addImage(imgData, 'JPEG', 20, 20, 50, 50);
+            // User name and ID
+            doc.text(80, 30, `User Name: ${name}`);
+            doc.text(80, 40, `ID: ${idNumber}`);
+            // Congratulations message
+            doc.text(20, 90, 'Congratulations!! You have secured');
+            doc.setFont("helvetica", "bold");
+            doc.text(120, 90, rank);
+
+            doc.save('user_details.pdf');
+        };
+        reader.readAsDataURL(photo);
+    });
+</script>
+
+</body>
+</html>
